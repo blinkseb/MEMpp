@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstring>
 
 #include <cuba.h>
 
@@ -31,14 +32,20 @@ MEMpp::MEMpp(const ConfigurationReader& configuration) {
     // Create phase-space points vector, input for many modules
     m_ps_points = Pool::get().put<std::vector<double>>({"cuba", "ps_points"});
 
+    // Create vector for input particles
+    m_particles = Pool::get().put<std::vector<LorentzVector>>({"input", "particles"});
+
     // Construct modules from configuration
     // Do it manually here since we don't have a configuration parser yet
 
     // First, load all shared libraries containing modules
     m_libraries.push_back(std::make_shared<SharedLibrary>("libmodules.so"));
 
-    m_modules.push_back(ModuleFactory::get().create("Flatter", "top1_flatter"));
-    m_modules.push_back(ModuleFactory::get().create("Flatter", "top2_flatter"));
+    m_modules.push_back(ModuleFactory::get().create("Flatter", "flatter_s13"));
+    m_modules.push_back(ModuleFactory::get().create("Flatter", "flatter_s134"));
+    m_modules.push_back(ModuleFactory::get().create("Flatter", "flatter_s25"));
+    m_modules.push_back(ModuleFactory::get().create("Flatter", "flatter_s256"));
+    m_modules.push_back(ModuleFactory::get().create("BlockD",  "blockd"));
 
     m_n_dimensions = 0;
     for (const auto& module: m_modules) {
@@ -57,7 +64,10 @@ MEMpp::~MEMpp() {
     Pool::destroy();
 }
 
-std::vector<std::pair<double, double>> MEMpp::computeWeights(const std::vector<float>& particules) {
+std::vector<std::pair<double, double>> MEMpp::computeWeights(const std::vector<LorentzVector>& particules) {
+
+    *m_particles = particules;
+
     int neval, nfail;
     double mcResult = 0, prob = 0, error = 0;
 
@@ -82,8 +92,8 @@ std::vector<std::pair<double, double>> MEMpp::computeWeights(const std::vector<f
          flags,                  // (int) various control flags in binary format, see setFlags function
          0,                      // (int) seed (seed==0 => SOBOL; seed!=0 && control flag "level"==0 => Mersenne Twister)
          0,                      // (int) minimum number of integrand evaluations
-         10000,                    // (int) maximum number of integrand evaluations (approx.!)
-         1000,                     // (int) number of integrand evaluations per interations (to start)
+         10,                    // (int) maximum number of integrand evaluations (approx.!)
+         10,                     // (int) number of integrand evaluations per interations (to start)
          0,                      // (int) increase in number of integrand evaluations per interations
          12500,                   // (int) batch size for sampling
          0,                      // (int) grid number, 1-10 => up to 10 grids can be stored, and re-used for other integrands (provided they are not too different)
@@ -100,17 +110,21 @@ std::vector<std::pair<double, double>> MEMpp::computeWeights(const std::vector<f
 }
 
 double MEMpp::integrand(const double* psPoints, const double* weights) {
+
     // Store phase-space points into the pool
-    for (size_t i = 0; i < m_n_dimensions; i++) {
-        (*m_ps_points)[i] = psPoints[i];
-    }
+    std::memcpy(m_ps_points->data(), psPoints, sizeof(double) * m_n_dimensions);
 
     for (auto& module: m_modules) {
         module->work();
     }
 
-    double s = *Pool::get().get<double>({"top1_flatter", "s"});
-    return sqrt(s);
+    const std::vector<std::pair<LorentzVector, LorentzVector>>& i = *Pool::get().get<std::vector<std::pair<LorentzVector, LorentzVector>>>({"blockd", "invisibles"});
+
+    for (const auto& p: i) {
+        std::cout << p.first << " ; " << p.second << std::endl;
+    }
+
+    return 0;
 }
 
 int MEMpp::CUBAIntegrand(const int *nDim, const double* psPoint, const int *nComp, double *value, void *inputs, const int *nVec, const int *core, const double *weight) {

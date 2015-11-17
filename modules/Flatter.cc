@@ -3,7 +3,8 @@
 class Flatter: public Module {
     public:
 
-        Flatter(const std::string& name): Module(name) {
+        Flatter(const std::string& name): Module(name),
+            mass((name == "flatter_s13" || name == "flatter_s25") ? 80.419 : 173) {
             static size_t counter = 0;
             ps_index = counter;
             counter++;
@@ -38,4 +39,3 @@ class Flatter: public Module {
 
 };
 REGISTER_MODULE(Flatter);
-

@@ -4,6 +4,7 @@
 
 #include <Module.h>
 #include <SharedLibrary.h>
+#include <Types.h>
 
 struct ConfigurationReader;
 
@@ -12,7 +13,7 @@ class MEMpp {
         MEMpp(const ConfigurationReader&);
         virtual ~MEMpp();
 
-        std::vector<std::pair<double, double>> computeWeights(const std::vector<float>& particules);
+        std::vector<std::pair<double, double>> computeWeights(const std::vector<LorentzVector>& particules);
 
         double integrand(const double* psPoints, const double* weights);
 
@@ -27,4 +28,5 @@ class MEMpp {
 
         size_t m_n_dimensions;
         std::shared_ptr<std::vector<double>> m_ps_points;
+        std::shared_ptr<std::vector<LorentzVector>> m_particles;
 };
