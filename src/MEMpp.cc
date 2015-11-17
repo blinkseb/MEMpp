@@ -40,6 +40,11 @@ MEMpp::MEMpp(const ConfigurationReader& configuration) {
     m_modules.push_back(ModuleFactory::get().create("Flatter", "top1_flatter"));
     m_modules.push_back(ModuleFactory::get().create("Flatter", "top2_flatter"));
 
+    // FIXME: Detect dimensions via modules
+    m_n_dimensions = 2;
+    // Resize pool ps-points vector
+    m_ps_points->resize(m_n_dimensions);
+
     cubacores(0, 0);
 }
 
@@ -60,10 +65,6 @@ std::vector<std::pair<double, double>> MEMpp::computeWeights(const std::vector<f
     unsigned int level = 0;
 
     unsigned int flags = setFlags(verbosity, subregion, retainStateFile, level, smoothing, takeOnlyGridFromFile);
-
-    m_n_dimensions = 2;
-    // Resize pool ps-points vector
-    m_ps_points->resize(m_n_dimensions);
 
     Vegas
         (
