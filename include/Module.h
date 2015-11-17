@@ -14,6 +14,10 @@ class Module {
         virtual void work() { };
         virtual void finish() { };
 
+        virtual size_t dimensions() const {
+            return 0;
+        }
+
     protected:
         template<typename T> std::shared_ptr<T> produce(const std::string& name) {
             return Pool::get().put<T>({m_name, name});

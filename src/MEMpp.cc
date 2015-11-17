@@ -40,8 +40,12 @@ MEMpp::MEMpp(const ConfigurationReader& configuration) {
     m_modules.push_back(ModuleFactory::get().create("Flatter", "top1_flatter"));
     m_modules.push_back(ModuleFactory::get().create("Flatter", "top2_flatter"));
 
-    // FIXME: Detect dimensions via modules
-    m_n_dimensions = 2;
+    m_n_dimensions = 0;
+    for (const auto& module: m_modules) {
+        m_n_dimensions += module->dimensions();
+    }
+    std::cout << "Number of dimensions for integration: " << m_n_dimensions << std::endl;
+
     // Resize pool ps-points vector
     m_ps_points->resize(m_n_dimensions);
 

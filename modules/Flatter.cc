@@ -9,7 +9,7 @@ class Flatter: public Module {
             counter++;
         };
 
-        virtual void work() {
+        virtual void work() override {
 
             double psPoint = ps_points->at(ps_index);
             const double range = M_PI / 2. + std::atan(mass / width);
@@ -17,6 +17,10 @@ class Flatter: public Module {
 
             *s = mass * width * std::tan(y) + (mass * mass);
             *jacobian = range * mass * width / (std::cos(y) * std::cos(y));
+        }
+
+        virtual size_t dimensions() const override {
+            return 1;
         }
 
     private:
