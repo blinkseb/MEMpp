@@ -24,7 +24,7 @@ class Flatter: public Module {
         const float mass = 173.; // Will be configurable
         const float width = 3.; // Will be configurable
 
-        std::string vegas_module_name = "vegas"; // Will be configurable
+        std::string vegas_module_name = "cuba"; // Will be configurable
 
         std::shared_ptr<const std::vector<double>> ps_points = get<std::vector<double>>(vegas_module_name, "ps_points");
 

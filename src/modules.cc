@@ -12,7 +12,12 @@ int main(int argc, char** argv) {
 
     MEMpp weight(configuration);
 
-    std::vector<float> weights = weight.computeWeights({});
+    std::vector<std::pair<double, double>> weights = weight.computeWeights({});
+
+    std::cout << "Result: " << std::endl;
+    for (const auto& r: weights) {
+        std::cout << r.first << " +- " << r.second << std::endl;
+    }
 
     return 0;
 }
