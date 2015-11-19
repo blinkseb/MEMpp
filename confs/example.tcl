@@ -2,18 +2,9 @@
 # add is just an alias for lappend
 interp alias {} add {} lappend
 
-# This will be a C++ function
-proc load_module {name} {
-    # Do nothing
-}
-
-proc module {type name cmd} {
-    namespace eval $name $cmd
-}
-
 # Real configuration part starts here
 
-load_module libmodules.so
+load_modules libmodules.so
 
 set M_TOP 173
 set M_W 80
@@ -36,7 +27,7 @@ module Flatter flatter25 {
   set width 3
 }
 
-module Flatter flatter134 {
+module Flatter flatter256 {
   set input {input/phaseSpace 4}
   set mass $M_TOP
   set width 3

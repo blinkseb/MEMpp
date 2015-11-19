@@ -39,7 +39,7 @@ MEMpp::MEMpp(const ConfigurationReader& configuration) {
     // Do it manually here since we don't have a configuration parser yet
 
     // First, load all shared libraries containing modules
-    m_libraries.push_back(std::make_shared<SharedLibrary>("libmodules.so"));
+    // m_libraries.push_back(std::make_shared<SharedLibrary>("libmodules.so"));
 
     m_modules.push_back(ModuleFactory::get().create("Flatter", "flatter_s13"));
     m_modules.push_back(ModuleFactory::get().create("Flatter", "flatter_s134"));

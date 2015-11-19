@@ -6,6 +6,8 @@
 
 int main(int argc, char** argv) {
 
+    SharedLibrary lib("libmodules.so");
+
     ConfigurationReader configuration;
 
     // TODO:

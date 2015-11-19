@@ -1,12 +1,4 @@
--- function normally defined in C++
-function load_module(lib)
-   _G['Flatter'] = {} 
-   _G['BlockD'] = {} 
-end
-
--- Real configuration part starts here
-
-load_module('libmodules.so')
+load_modules('libmodules.so')
 
 M_W = 80
 M_TOP = 173

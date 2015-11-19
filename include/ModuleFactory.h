@@ -1,14 +1,17 @@
 #pragma once
 
-#include <string>
 #include <memory>
+#include <string>
 #include <unordered_map>
+#include <vector>
 
 // Forward declaration
 class Module;
 
 // Plugin system
 template<typename T> class PluginFactory;
+
+// FIXME: This need some error protection
 
 template<typename Interface, typename... Args>
 class PluginFactory<Interface* (Args...)> {
@@ -44,6 +47,15 @@ class PluginFactory<Interface* (Args...)> {
 
         PMakerBase* findPMaker(const std::string& name) const {
             return m_plugins.at(name);
+        }
+
+        std::vector<std::string> getPluginsList() const {
+            std::vector<std::string> result;
+            for (const auto& plugin: m_plugins) {
+                result.push_back(plugin.first);
+            }
+
+            return result;
         }
 
     private:

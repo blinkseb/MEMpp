@@ -27,8 +27,15 @@ set(EXTERNAL_SRC_DIR "${EXTERNAL_DIR}/src")
 
 include_directories(${EXTERNAL_INCLUDE_DIR})
 
+add_subdirectory(external)
+
+include_directories(${EXTERNAL_DIR}/tcl)
+include_directories(${EXTERNAL_DIR}/lua)
+
 find_library(CUBA_LIBRARY cuba ${EXTERNAL_LIB_DIR} REQUIRED)
 target_link_libraries(modules_test ${CUBA_LIBRARY})
+target_link_libraries(modules_test tcl)
+target_link_libraries(modules_test lua)
 
 find_package(ROOT REQUIRED)
 include_directories(${ROOT_INCLUDE_DIR})
