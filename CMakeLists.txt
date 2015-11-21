@@ -29,6 +29,7 @@ include_directories(${EXTERNAL_INCLUDE_DIR})
 
 add_subdirectory(external)
 
+include_directories(${EXTERNAL_DIR})
 include_directories(${EXTERNAL_DIR}/tcl)
 include_directories(${EXTERNAL_DIR}/lua)
 
