@@ -21,19 +21,19 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g -O2 -fcx-fortran-rules -fc
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(EXTERNAL_DIR "${PROJECT_SOURCE_DIR}/external")
-set(EXTERNAL_INCLUDE_DIR "${EXTERNAL_DIR}/include")
-set(EXTERNAL_LIB_DIR "${EXTERNAL_DIR}/lib")
-set(EXTERNAL_SRC_DIR "${EXTERNAL_DIR}/src")
+#set(EXTERNAL_INCLUDE_DIR "${EXTERNAL_DIR}/include")
+#set(EXTERNAL_LIB_DIR "${EXTERNAL_DIR}/lib")
+#set(EXTERNAL_SRC_DIR "${EXTERNAL_DIR}/src")
 
-include_directories(${EXTERNAL_INCLUDE_DIR})
+#include_directories(${EXTERNAL_INCLUDE_DIR})
 
 add_subdirectory(external)
 
 include_directories(${EXTERNAL_DIR})
+include_directories(${EXTERNAL_DIR}/cuba)
 include_directories(${EXTERNAL_DIR}/lua)
 
-find_library(CUBA_LIBRARY cuba ${EXTERNAL_LIB_DIR} REQUIRED)
-target_link_libraries(modules_test ${CUBA_LIBRARY})
+target_link_libraries(modules_test cuba)
 target_link_libraries(modules_test lua)
 
 find_package(ROOT REQUIRED)
