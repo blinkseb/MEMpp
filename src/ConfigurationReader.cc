@@ -1,62 +1,9 @@
 #include <ConfigurationReader.h>
 #include <ModuleFactory.h>
 
-#include <tcl.h>
 #include <lua.hpp>
 
 #include <iostream>
-
-namespace tcl {
-    /*!
-     * TCL 'module' command
-     * Syntax: module <type> <name> <definition>
-     *
-     * <type>           type of the module
-     * <name>           name of the module
-     * <definition>     block of commands defining the module
-     *
-     * A new TCL namespace is created, named <name> and <definition> is executed inside this
-     * namespace
-     */
-    int module(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
-        if (objc < 3) {
-            Tcl_WrongNumArgs(interp, 1, objv, "type name ?args...?");
-            return TCL_ERROR;
-        }
-
-        std::string module_type = Tcl_GetStringFromObj(objv[1], nullptr);
-        std::string module_name = Tcl_GetStringFromObj(objv[2], nullptr);
-
-        ConfigurationReader* reader = static_cast<ConfigurationReader*>(clientData);
-        reader->addModule(module_type, module_name);
-
-        auto list = Tcl_NewListObj(0, nullptr);
-        Tcl_ListObjAppendElement(interp, list, Tcl_NewStringObj("namespace", -1));
-        Tcl_ListObjAppendElement(interp, list, Tcl_NewStringObj("eval", -1));
-        // Pass everything, except the first two arguments (<type> and <name>), to the namespace evaluation
-        Tcl_ListObjAppendList(interp, list, Tcl_NewListObj(objc - 2, objv + 2));
-
-        return Tcl_GlobalEvalObj(interp, list);
-    }
-
-    /*!
-     * TCL 'load_modules' command
-     * Syntax: load_modules <file>
-     *
-     * <file>     filename of the library to load, containing modules definitions
-     */
-    int load_modules(ClientData clientData, Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]) {
-        if (objc < 2) {
-            Tcl_WrongNumArgs(interp, 1, objv, "file");
-            return TCL_ERROR;
-        }
-
-        std::string file = Tcl_GetStringFromObj(objv[1], nullptr);
-        std::cout << "Loading library: " << file << std::endl;
-
-        return TCL_OK;
-    }
-};
 
 namespace lua {
 
@@ -158,25 +105,6 @@ namespace lua {
 };
 
 ConfigurationReader::ConfigurationReader() {
-
-    std::cout << std::endl << "Parsing TCL configuration" << std::endl;
-    std::cout << "-----------" << std::endl;
-    auto tcl_interpreter = Tcl_CreateInterp();
-
-    Tcl_CreateObjCommand(tcl_interpreter, "module", tcl::module, this, 0);
-    Tcl_CreateObjCommand(tcl_interpreter, "load_modules", tcl::load_modules, this, 0);
-
-    auto res = Tcl_EvalFile(tcl_interpreter, "../confs/example.tcl");
-
-    for (const auto& m: m_modules) {
-        std::cout << "Configuration declared module " << m.type << "::" << m.name << std::endl;
-    }
-
-    Tcl_DeleteInterp(tcl_interpreter);
-
-    std::cout << "-----------" << std::endl;
-
-    m_modules.clear();
 
     std::cout << std::endl << "Parsing LUA configuration" << std::endl;
     std::cout << "-----------" << std::endl;
