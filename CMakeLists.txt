@@ -17,6 +17,7 @@ set(MEMPP_SOURCES
     "src/ConfigurationSet.cc"
     "src/InputTag.cc"
     "src/LibraryManager.cc"
+    "src/logging.cc"
     "src/MEMpp.cc"
     "src/ModuleFactory.cc"
     "src/Pool.cc"
@@ -43,9 +44,6 @@ include_directories(${EXTERNAL_DIR}/spdlog)
 target_link_libraries(mempp cuba)
 target_link_libraries(mempp lua)
 target_link_libraries(mempp pthread)
-
-add_definitions(-DBOOST_LOG_DYN_LINK=1)
-target_link_libraries(mempp boost_log)
 
 find_package(ROOT REQUIRED)
 include_directories(${ROOT_INCLUDE_DIR})

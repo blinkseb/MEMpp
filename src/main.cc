@@ -1,10 +1,11 @@
-#include <iostream>
-
 #include <ConfigurationReader.h>
 #include <MEMpp.h>
 #include <Types.h>
+#include <logging.h>
 
 int main(int argc, char** argv) {
+
+    spdlog::set_level(spdlog::level::trace);
 
     ConfigurationReader configuration("../confs/example.lua");
     MEMpp weight(configuration);
@@ -20,9 +21,9 @@ int main(int argc, char** argv) {
 
     std::vector<std::pair<double, double>> weights = weight.computeWeights({p3, p4, p5, p6});
 
-    std::cout << "Result: " << std::endl;
+    LOG(debug) << "Result:";
     for (const auto& r: weights) {
-        std::cout << r.first << " +- " << r.second << std::endl;
+        LOG(debug) << r.first << " +- " << r.second;
     }
 
     return 0;

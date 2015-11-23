@@ -13,7 +13,7 @@ void ConfigurationSet::parse(lua_State* L, int index) {
             boost::any value = lua::to_any(L, -1);
             m_set.emplace(key, value);
         } catch(...) {
-            LOG(fatal) << "Exception while trying to parse parameter " << m_module_type << "." << m_module_name << "::" << key;
+            LOG(emerg) << "Exception while trying to parse parameter " << m_module_type << "." << m_module_name << "::" << key;
             std::rethrow_exception(std::current_exception());
         }
 

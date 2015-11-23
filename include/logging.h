@@ -1,5 +1,10 @@
 #pragma once
 
-#include <boost/log/trivial.hpp>
+#include <spdlog/spdlog.h>
 
-#define LOG BOOST_LOG_TRIVIAL
+namespace logging {
+    std::shared_ptr<spdlog::logger>& get();
+}
+
+#define LOG(severity) \
+    ::logging::get()->severity()
