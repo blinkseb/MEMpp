@@ -6,13 +6,7 @@
 
 int main(int argc, char** argv) {
 
-    SharedLibrary lib("libmodules.so");
-
-    ConfigurationReader configuration;
-
-    // TODO:
-    // configuration.parse("configuration.tcl");
-
+    ConfigurationReader configuration("../confs/example.lua");
     MEMpp weight(configuration);
 
     // Electron

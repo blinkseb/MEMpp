@@ -5,30 +5,29 @@
 
 #include <boost/any.hpp>
 
-using InputTag = std::pair<std::string, std::string>;
+#include <InputTag.h>
 
-namespace std {
-    template<>
-        struct hash<InputTag> {
-            size_t operator()(const InputTag& tag) const {
-                return string_hash(tag.first) + string_hash(tag.second);
-            }
-
-            std::hash<std::string> string_hash;
-        };
-};
+struct ArrayEntry;
 
 // A simple memory pool
 class Pool {
     public:
         template<typename T> std::shared_ptr<const T> get(const InputTag& tag) {
-            boost::any& v = m_pool[tag];
+            auto it = m_pool.find(tag);
+            if (it == m_pool.end())
+                throw tag_not_found_error("No such tag in pool: " + tag.toString());
+
+            boost::any& v = it->second;
             std::shared_ptr<T>& ptr = boost::any_cast<std::shared_ptr<T>&>(v);
 
             return std::const_pointer_cast<const T>(ptr);
         }
 
         template<typename T> std::shared_ptr<T> put(const InputTag& tag) {
+            auto it = m_pool.find(tag);
+            if (it != m_pool.end())
+                throw duplicated_tag_error("A module already produced the tag '" + tag.toString() + "'");
+
             std::shared_ptr<T> ptr(new T());
             m_pool.emplace(tag, boost::any(ptr));
 
@@ -41,7 +40,22 @@ class Pool {
         static void destroy();
 
     private:
+        class tag_not_found_error: public std::runtime_error {
+            using std::runtime_error::runtime_error;
+        };
+
+        class duplicated_tag_error: public std::runtime_error {
+            using std::runtime_error::runtime_error;
+        };
+
+        friend struct ArrayEntry;
+
+        boost::any raw_get(const InputTag&);
+
         Pool() = default;
+        Pool(const Pool&) = delete;
+        Pool& operator=(const Pool&) = delete;
+
         static Pool*& instance();
 
         std::unordered_map<InputTag, boost::any> m_pool;

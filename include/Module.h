@@ -7,7 +7,7 @@ class Module {
     public:
         Module(const std::string& name):
             m_name(name) {
-            // Empty    
+            // Empty
         }
 
         virtual void configure() { };

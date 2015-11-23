@@ -1,9 +1,11 @@
-#include <ConfigurationReader.h>
-#include <ModuleFactory.h>
-
+#include <boost/any.hpp>
+#include <logging.h>
 #include <lua.hpp>
 
-#include <iostream>
+#include <ConfigurationReader.h>
+#include <lua/utils.h>
+#include <LibraryManager.h>
+#include <ModuleFactory.h>
 
 namespace lua {
 
@@ -48,22 +50,9 @@ namespace lua {
         return 0;
     }
 
-    /*!
-     * Hook for the 'load_modules' lua function. The stack must have one element:
-     *     1        (string) The filename of the library to load
-     *
-     * The library will be loaded, and for each module declared, a new global variable will
-     * be declared, accessible in the lua configuration
-     */
-    int load_modules(lua_State* L) {
-        void* cfg_ptr = lua_touserdata(L, lua_upvalueindex(1));
-
-        const char *path = luaL_checkstring(L, 1);
-        std::cout << "Loading library: " << path << std::endl;
-
+    void lua_register_modules(lua_State* L, void* ptr) {
         std::vector<std::string> modules = ModuleFactory::get().getPluginsList();
         for (const auto& module: modules) {
-
             const char* module_name = module.c_str();
             const char* module_metatable = (module + "_mt").c_str();
 
@@ -83,7 +72,7 @@ namespace lua {
             lua_pushstring(L, module_name);
             lua_setfield(L, -2, "__name");
 
-            lua_pushlightuserdata(L, cfg_ptr);
+            lua_pushlightuserdata(L, ptr);
             lua_setfield(L, -2, "__ptr");
 
             // Set the metadata '__newindex' function
@@ -94,44 +83,75 @@ namespace lua {
             luaL_setfuncs(L, l, 0);
 
             lua_setmetatable(L, -2);
-            
+
             // And register it as a global variable
             lua_setglobal(L, module_name);
+
+            LOG(trace) << "Registered new lua global variable '" << module_name << "'";
         }
+    }
+
+    /*!
+     * Hook for the 'load_modules' lua function. The stack must have one element:
+     *     1        (string) The filename of the library to load
+     *
+     * The library will be loaded, and for each module declared, a new global variable will
+     * be declared, accessible in the lua configuration
+     */
+    int load_modules(lua_State* L) {
+        void* cfg_ptr = lua_touserdata(L, lua_upvalueindex(1));
+
+        const char *path = luaL_checkstring(L, 1);
+        LibraryManager::get().registerLibrary(path);
+
+        lua_register_modules(L, cfg_ptr);
 
         return 0;
     }
-
 };
 
-ConfigurationReader::ConfigurationReader() {
+ConfigurationReader::ConfigurationReader(const std::string& file) {
 
-    std::cout << std::endl << "Parsing LUA configuration" << std::endl;
-    std::cout << "-----------" << std::endl;
+    LOG(debug) << "Parsing LUA configuration from " << file;
     auto lua_state = luaL_newstate();
 
     luaL_openlibs(lua_state);
 
-    //lua_register(lua_state, "load_modules", lua::load_modules);
-
+    // Register function load_modules
     lua_pushlightuserdata(lua_state, this);
     lua_pushcclosure(lua_state, lua::load_modules, 1);
     lua_setglobal(lua_state, "load_modules");
 
-    if (luaL_dofile(lua_state, "../confs/example.lua")) {
+    // Register existing modules
+    lua::lua_register_modules(lua_state, this);
+
+    // Parse file
+    if (luaL_dofile(lua_state, file.c_str())) {
         printf("%s\n", lua_tostring(lua_state, -1));
     }
 
-    for (const auto& m: m_modules) {
-        std::cout << "Configuration declared module " << m.type << "::" << m.name << std::endl;
+    for (auto& m: m_light_modules) {
+        LOG(debug) << "Configuration declared module " << m.type << "::" << m.name;
+
+        lua_getglobal(lua_state, m.type.c_str());
+        lua_getfield(lua_state, -1, m.name.c_str());
+
+        m.parameters.reset(new ConfigurationSet(m.type, m.name));
+        m.parameters->parse(lua_state, -1);
+
+        lua_pop(lua_state, 2);
     }
 
     lua_close(lua_state);
-    std::cout << "-----------" << std::endl;
-
-    std::cout << std::endl;
 }
 
 void ConfigurationReader::addModule(const std::string& type, const std::string& name) {
-    m_modules.push_back({name, type});
+    LightModule module;
+    module.name = name;
+    module.type = type;
+    m_light_modules.push_back(module);
+}
+
+std::vector<LightModule> ConfigurationReader::getModules() const {
+    return m_light_modules;
 }

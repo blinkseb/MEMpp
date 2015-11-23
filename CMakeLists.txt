@@ -9,34 +9,50 @@ endif(${CMAKE_MAJOR_VERSION} EQUAL 2 AND ${CMAKE_MINOR_VERSION} EQUAL 6)
 
 include_directories("${CMAKE_CURRENT_LIST_DIR}/include")
 
-file(GLOB_RECURSE MODULES_SOURCES modules/*.cc)
-add_library(modules SHARED ${MODULES_SOURCES})
 
-file(GLOB_RECURSE SOURCES src/*.cc)
-add_executable(modules_test ${SOURCES})
-target_link_libraries(modules_test dl)
+set(MEMPP_SOURCES
+    "modules/Flatter.cc"
+    "modules/BlockD.cc"
+    "src/ConfigurationReader.cc"
+    "src/ConfigurationSet.cc"
+    "src/InputTag.cc"
+    "src/LibraryManager.cc"
+    "src/MEMpp.cc"
+    "src/ModuleFactory.cc"
+    "src/Pool.cc"
+    "src/SharedLibrary.cc"
+    "src/Utils.cc"
+    "src/lua/utils.cc"
+    )
+
+add_library(mempp SHARED ${MEMPP_SOURCES})
+target_link_libraries(mempp dl)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g -O2 -fcx-fortran-rules -fcx-limited-range")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(EXTERNAL_DIR "${PROJECT_SOURCE_DIR}/external")
-#set(EXTERNAL_INCLUDE_DIR "${EXTERNAL_DIR}/include")
-#set(EXTERNAL_LIB_DIR "${EXTERNAL_DIR}/lib")
-#set(EXTERNAL_SRC_DIR "${EXTERNAL_DIR}/src")
-
-#include_directories(${EXTERNAL_INCLUDE_DIR})
-
 add_subdirectory(external)
 
 include_directories(${EXTERNAL_DIR})
 include_directories(${EXTERNAL_DIR}/cuba)
 include_directories(${EXTERNAL_DIR}/lua)
+include_directories(${EXTERNAL_DIR}/spdlog)
 
-target_link_libraries(modules_test cuba)
-target_link_libraries(modules_test lua)
+target_link_libraries(mempp cuba)
+target_link_libraries(mempp lua)
+target_link_libraries(mempp pthread)
+
+add_definitions(-DBOOST_LOG_DYN_LINK=1)
+target_link_libraries(mempp boost_log)
 
 find_package(ROOT REQUIRED)
 include_directories(${ROOT_INCLUDE_DIR})
-target_link_libraries(modules ${ROOT_LIBRARIES})
-target_link_libraries(modules_test ${ROOT_LIBRARIES})
+target_link_libraries(mempp ${ROOT_LIBRARIES})
+
+add_library(empty_module SHARED "modules/EmptyModule.cc")
+
+add_executable(main "src/main.cc")
+target_link_libraries(main mempp)
+set_target_properties(main PROPERTIES OUTPUT_NAME "mempp.exe")

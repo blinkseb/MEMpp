@@ -2,11 +2,10 @@
 
 #include <vector>
 
+#include <ConfigurationReader.h>
 #include <Module.h>
 #include <SharedLibrary.h>
 #include <Types.h>
-
-struct ConfigurationReader;
 
 class MEMpp {
     public:

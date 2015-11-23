@@ -1,10 +1,11 @@
-#include <iostream>
 #include <cstring>
 
 #include <cuba.h>
 
+#include <logging.h>
 #include <MEMpp.h>
 #include <Pool.h>
+
 
 // FIXME: Move
 unsigned int setFlags(char verbosity, bool subregion, bool retainStateFile, unsigned int level, bool smoothing, bool takeOnlyGridFromFile) {
@@ -26,6 +27,7 @@ unsigned int setFlags(char verbosity, bool subregion, bool retainStateFile, unsi
 }
 
 MEMpp::MEMpp(const ConfigurationReader& configuration) {
+    
     // Initialize shared memory pool for modules
     Pool::create();
 
@@ -36,22 +38,17 @@ MEMpp::MEMpp(const ConfigurationReader& configuration) {
     m_particles = Pool::get().put<std::vector<LorentzVector>>({"input", "particles"});
 
     // Construct modules from configuration
-    // Do it manually here since we don't have a configuration parser yet
-
-    // First, load all shared libraries containing modules
-    // m_libraries.push_back(std::make_shared<SharedLibrary>("libmodules.so"));
-
-    m_modules.push_back(ModuleFactory::get().create("Flatter", "flatter_s13"));
-    m_modules.push_back(ModuleFactory::get().create("Flatter", "flatter_s134"));
-    m_modules.push_back(ModuleFactory::get().create("Flatter", "flatter_s25"));
-    m_modules.push_back(ModuleFactory::get().create("Flatter", "flatter_s256"));
-    m_modules.push_back(ModuleFactory::get().create("BlockD",  "blockd"));
-
+    std::vector<LightModule> modules = configuration.getModules();
+    for (const auto& module: modules) {
+        m_modules.push_back(ModuleFactory::get().create(module.type, *module.parameters));
+    }
+    
     m_n_dimensions = 0;
     for (const auto& module: m_modules) {
         m_n_dimensions += module->dimensions();
     }
-    std::cout << "Number of dimensions for integration: " << m_n_dimensions << std::endl;
+
+    LOG(info) << "Number of dimensions for integration: " << m_n_dimensions;
 
     // Resize pool ps-points vector
     m_ps_points->resize(m_n_dimensions);
@@ -71,7 +68,7 @@ std::vector<std::pair<double, double>> MEMpp::computeWeights(const std::vector<L
     int neval, nfail;
     double mcResult = 0, prob = 0, error = 0;
 
-    char verbosity = 3; // 0-3
+    char verbosity = 0; // 0-3
     bool subregion = false; // true = only last set of samples is used for final evaluation of integral
     bool smoothing = false;
     bool retainStateFile = false; // false => delete state file when integration ends

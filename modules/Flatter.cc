@@ -1,18 +1,22 @@
+#include <ArrayEntry.h>
+#include <ConfigurationSet.h>
 #include <Module.h>
+
+#include <iostream>
 
 class Flatter: public Module {
     public:
 
-        Flatter(const std::string& name): Module(name),
-            mass((name == "flatter_s13" || name == "flatter_s25") ? 80.419 : 173) {
-            static size_t counter = 0;
-            ps_index = counter;
-            counter++;
+        Flatter(const ConfigurationSet& parameters): Module(parameters.getModuleName()),
+            mass(parameters.get<double>("mass")),
+            width(parameters.get<double>("width")),
+            m_ps_point(parameters.get<ArrayEntry>("input")) {
+
         };
 
         virtual void work() override {
 
-            double psPoint = ps_points->at(ps_index);
+            double psPoint = m_ps_point.get<double>();
             const double range = M_PI / 2. + std::atan(mass / width);
             const double y = - std::atan(mass / width) + range * psPoint;
 
@@ -25,13 +29,9 @@ class Flatter: public Module {
         }
 
     private:
-        size_t ps_index = 0; // Will be configurable
-        const float mass = 173.; // Will be configurable
-        const float width = 3.; // Will be configurable
-
-        std::string vegas_module_name = "cuba"; // Will be configurable
-
-        std::shared_ptr<const std::vector<double>> ps_points = get<std::vector<double>>(vegas_module_name, "ps_points");
+        const float mass;
+        const float width;
+        ArrayEntry m_ps_point;
 
         std::shared_ptr<double> s = produce<double>("s");
         std::shared_ptr<double> jacobian = produce<double>("jacobian");

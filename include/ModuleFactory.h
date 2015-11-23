@@ -5,13 +5,14 @@
 #include <unordered_map>
 #include <vector>
 
+#include <logging.h>
+
 // Forward declaration
 class Module;
+class ConfigurationSet;
 
 // Plugin system
 template<typename T> class PluginFactory;
-
-// FIXME: This need some error protection
 
 template<typename Interface, typename... Args>
 class PluginFactory<Interface* (Args...)> {
@@ -42,11 +43,20 @@ class PluginFactory<Interface* (Args...)> {
         static PluginFactory<Interface* (Args...)>& get();
 
         void registerPMaker(PMakerBase* pMaker, const std::string& name) {
+            auto it = m_plugins.find(name);
+            if (it != m_plugins.end())
+                throw plugin_already_exists_error("The plugin type '" + name + "' is already registered in the factory.");
+
+            LOG(trace) << "Registering plugin " << name << " in the factory";
             m_plugins.emplace(name, pMaker);
         }
 
         PMakerBase* findPMaker(const std::string& name) const {
-            return m_plugins.at(name);
+            auto it = m_plugins.find(name);
+            if (it == m_plugins.end())
+                throw plugin_not_found_error("No such plugin type '" + name + "' registered in the factory.");
+
+            return it->second;
         }
 
         std::vector<std::string> getPluginsList() const {
@@ -59,8 +69,15 @@ class PluginFactory<Interface* (Args...)> {
         }
 
     private:
-        PluginFactory() {
-        }
+        class plugin_already_exists_error: public std::runtime_error {
+            using std::runtime_error::runtime_error;
+        };
+
+        class plugin_not_found_error: public std::runtime_error {
+            using std::runtime_error::runtime_error;
+        };
+
+        PluginFactory() = default;
 
         PluginFactory(const PluginFactory&) = delete; // stop default
         const PluginFactory& operator=(const PluginFactory&) = delete; // stop default
@@ -68,7 +85,7 @@ class PluginFactory<Interface* (Args...)> {
         std::unordered_map<std::string, PMakerBase*> m_plugins;
 };
 
-using ModuleFactory = PluginFactory<Module* (const std::string&)>;
+using ModuleFactory = PluginFactory<Module* (const ConfigurationSet&)>;
 
 #define MODULE_UNIQUE_NAME2(x, y) x ## y
 #define MODULE_UNIQUE_NAME(x, y) MODULE_UNIQUE_NAME2(x, y)

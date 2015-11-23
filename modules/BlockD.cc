@@ -1,3 +1,4 @@
+#include <ConfigurationSet.h>
 #include <Module.h>
 #include <Types.h>
 #include <Utils.h>
@@ -5,7 +6,7 @@
 class BlockD: public Module {
     public:
 
-        BlockD(const std::string& name): Module(name) {
+        BlockD(const ConfigurationSet& parameters): Module(parameters.getModuleName()) {
 
         };
 
