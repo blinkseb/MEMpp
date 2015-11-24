@@ -38,7 +38,7 @@ struct ArrayEntry {
          }
          int second_type = lua_rawgeti(L, absolute_index, 2);
          if (second_type != LUA_TNUMBER) {
-             lua_pop(L, 1);
+             lua_pop(L, 2);
              return false;
          }
 
@@ -63,7 +63,7 @@ struct ArrayEntry {
     }
 
     static bool fromTable(lua_State* L, int index, ArrayEntry& entry) {
-    
+
          std::string input_tag_str;
          size_t array_index;
 

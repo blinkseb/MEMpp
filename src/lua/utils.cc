@@ -96,8 +96,11 @@ namespace lua {
                     result = REAL;
                 else if ((result == REAL) && (entry_type == INTEGER))
                     result = REAL;
-                else if (result != entry_type)
-                    return NOT_SUPPORTED;
+                else if (result != entry_type) {
+                    lua_pop(L, 2);
+                    result = NOT_SUPPORTED;
+                    break;
+                }
             }
 
             lua_pop(L, 1);
@@ -147,11 +150,12 @@ namespace lua {
                     if (ArrayEntry::fromTable(L, absolute_index, entry)) {
                         result = entry;
                         break;
-                    } else if ((type = lua::lua_array_unique_type(L, absolute_index)) == NOT_SUPPORTED) {
-                        throw invalid_array_error("The type of value in the array is not unique");
+                    } else if ((type = lua::lua_array_unique_type(L, absolute_index)) != NOT_SUPPORTED) {
+                        result = lua_to_vector(L, absolute_index, type);
+                    } else {
+                        // Convert to a vector of boost::any
+                        result = lua_to_vector(L, absolute_index);
                     }
-
-                    result = lua_to_vector(L, absolute_index, type);
 
                 } else {
                     throw invalid_array_error("Map are not supported for the moment");
@@ -184,6 +188,23 @@ namespace lua {
         }
 
         throw invalid_array_error("Unsupported array type");
+    }
+
+    boost::any lua_to_vector(lua_State* L, int index) {
+        std::vector<boost::any> result;
+
+        size_t absolute_index = get_index(L, index);
+
+        if (lua_type(L, absolute_index) != LUA_TTABLE)
+            return result;
+
+        lua_pushnil(L);
+        while (lua_next(L, absolute_index) != 0) {
+            result.push_back(to_any(L, -1));
+            lua_pop(L, 1);
+        }
+
+        return result;
     }
 
     //! Specialization for double type, with implicit conversion from integer

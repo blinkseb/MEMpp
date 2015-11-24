@@ -52,4 +52,5 @@ namespace lua {
     }
 
     boost::any lua_to_vector(lua_State* L, int index, Type type);
+    boost::any lua_to_vector(lua_State* L, int index);
 }
