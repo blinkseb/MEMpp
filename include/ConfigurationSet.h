@@ -1,7 +1,7 @@
 #pragma once
 
 #include <boost/any.hpp>
-#include <lua.hpp>
+#include <lua/utils.h>
 #include <map>
 #include <string>
 
@@ -14,7 +14,7 @@ class ConfigurationSet {
             if (value == m_set.end())
                 throw not_found_error("Parameter '" + name + "' not found.");
 
-            return boost::any_cast<const T&>(m_set.at(name)); 
+            return boost::any_cast<const T&>(value->second);
         }
 
         template<typename T> const T& get(const std::string& name, const T& defaultValue) const {
@@ -22,7 +22,7 @@ class ConfigurationSet {
             if (value == m_set.end())
                 return defaultValue;
 
-            return value->second;
+            return boost::any_cast<const T&>(value->second);
         }
 
         void parse(lua_State* L, int index);

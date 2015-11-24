@@ -28,8 +28,10 @@ Flatter.flatter_s256 = {
 }
 
 BlockD.blockd = {
-  p = {'TransferFunction::p3', 'TransferFunction::p4', 'TransferFunction::p5', 'TransferFunction::p6', 'Input::met', 'Input::isr'},
-  s = {'flatter13::s', 'flatter134::s', 'flatter25::s', 'flatter256::s'},
-  r = {25, 8, 5, 6, 78},
-  t = {1., 5.5, 7.}
+    input = 'input::particles',
+
+    s13 = 'flatter_s13::s',
+    s134 = 'flatter_s134::s',
+    s25 = 'flatter_s25::s',
+    s256 = 'flatter_s256::s',
 }

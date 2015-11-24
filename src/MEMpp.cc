@@ -41,6 +41,7 @@ MEMpp::MEMpp(const ConfigurationReader& configuration) {
     std::vector<LightModule> modules = configuration.getModules();
     for (const auto& module: modules) {
         m_modules.push_back(ModuleFactory::get().create(module.type, *module.parameters));
+        m_modules.back()->configure();
     }
     
     m_n_dimensions = 0;
@@ -57,6 +58,10 @@ MEMpp::MEMpp(const ConfigurationReader& configuration) {
 }
 
 MEMpp::~MEMpp() {
+    for (const auto& module :m_modules) {
+        module->finish();
+    }
+
     // Destroy memory pool. Must be done before unloading libraries
     Pool::destroy();
 }
@@ -115,10 +120,13 @@ double MEMpp::integrand(const double* psPoints, const double* weights) {
         module->work();
     }
 
-    const std::vector<std::pair<LorentzVector, LorentzVector>>& i = *Pool::get().get<std::vector<std::pair<LorentzVector, LorentzVector>>>({"blockd", "invisibles"});
+    const std::vector<std::vector<LorentzVector>>& i = *Pool::get().get<std::vector<std::vector<LorentzVector>>>({"blockd", "invisibles"});
 
     for (const auto& p: i) {
-        std::cout << p.first << " ; " << p.second << std::endl;
+        for (const auto& pp: p)
+            std::cout << pp << " ; ";
+
+        std::cout << std::endl;
     }
 
     return 0;

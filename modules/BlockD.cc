@@ -7,7 +7,11 @@ class BlockD: public Module {
     public:
 
         BlockD(const ConfigurationSet& parameters): Module(parameters.getModuleName()) {
-
+            particles = get<std::vector<LorentzVector>>(parameters.get<InputTag>("input"));
+            s13 = get<double>(parameters.get<InputTag>("s13"));
+            s134 = get<double>(parameters.get<InputTag>("s134"));
+            s25 = get<double>(parameters.get<InputTag>("s25"));
+            s256 = get<double>(parameters.get<InputTag>("s256"));
         };
 
         virtual void work() override {
@@ -116,25 +120,23 @@ class BlockD: public Module {
 
                 //cout << endl << "## Evaluating Matrix Element based on solutions e1 = " << e1 << ", e2 = " << e2 << endl << endl;
 
-                if(e1 < 0. || e2 < 0.)
+                if (e1 < 0. || e2 < 0.)
                     continue;
 
-                LorentzVector tempp1, tempp2;
-
-                tempp1.SetCoordinates(
+                LorentzVector p1(
                         alpha1*e1 + beta1*e2 + gamma1,
                         alpha2*e1 + beta2*e2 + gamma2,
                         alpha3*e1 + beta3*e2 + gamma3,
                         e1);
 
-                tempp2.SetCoordinates(
+                LorentzVector p2(
                         alpha5*e1 + beta5*e2 + gamma5,
                         alpha6*e1 + beta6*e2 + gamma6,
                         alpha4*e1 + beta4*e2 + gamma4,
                         e2);
 
-                invisibles->push_back(std::make_pair(tempp1, tempp2));
-                jacobians->push_back(computeJacobian(tempp1, tempp2, p3, p4, p5, p6));
+                invisibles->push_back({p1, p2});
+                jacobians->push_back(computeJacobian(p1, p2, p3, p4, p5, p6));
             }
         }
 
@@ -229,14 +231,13 @@ class BlockD: public Module {
         }
 
     private:
-        std::shared_ptr<const std::vector<LorentzVector>> particles = get<std::vector<LorentzVector>>("input", "particles");
+        std::shared_ptr<const std::vector<LorentzVector>> particles;
+        std::shared_ptr<const double> s13;
+        std::shared_ptr<const double> s134;
+        std::shared_ptr<const double> s25;
+        std::shared_ptr<const double> s256;
 
-        std::shared_ptr<const double> s13  = get<double>("flatter_s13",  "s");
-        std::shared_ptr<const double> s134 = get<double>("flatter_s134", "s");
-        std::shared_ptr<const double> s25  = get<double>("flatter_s25",  "s");
-        std::shared_ptr<const double> s256 = get<double>("flatter_s256", "s");
-
-        std::shared_ptr<std::vector<std::pair<LorentzVector, LorentzVector>>> invisibles = produce<std::vector<std::pair<ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double>>, ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double>>>>>("invisibles");
+        std::shared_ptr<std::vector<std::vector<LorentzVector>>> invisibles = produce<std::vector<std::vector<ROOT::Math::LorentzVector<ROOT::Math::PxPyPzE4D<double>>>>>("invisibles");
         std::shared_ptr<std::vector<double>> jacobians = produce<std::vector<double>>("jacobians");
 };
 REGISTER_MODULE(BlockD);

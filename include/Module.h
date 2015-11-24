@@ -27,6 +27,10 @@ class Module {
             return Pool::get().get<T>({module, name});
         }
 
+        template<typename T> std::shared_ptr<const T> get(const InputTag& tag) {
+            return Pool::get().get<T>(tag);
+        }
+
     private:
         std::string m_name;
 };
