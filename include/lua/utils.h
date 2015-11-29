@@ -12,7 +12,7 @@ namespace lua {
         INTEGER,
         REAL,
         INPUT_TAG,
-        ARRAY_ENTRY
+        CONFIGURATION_SET,
     };
 
     Type type(lua_State* L, int index);

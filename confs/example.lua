@@ -4,25 +4,25 @@ M_W = 80.
 M_TOP = 173.
 
 Flatter.flatter_s13 = {
-    input = {"cuba::ps_points", 0},
+    input = "cuba::ps_points/0",
     mass = M_W,
     width = 3.
 }
 
 Flatter.flatter_s134 = {
-    input = {"cuba::ps_points", 1},
+    input = "cuba::ps_points/1",
     mass = M_TOP,
     width = 3.
 }
 
 Flatter.flatter_s25 = {
-    input = {"cuba::ps_points", 2},
+    input = "cuba::ps_points/2",
     mass = M_W,
     width = 3.
 }
 
 Flatter.flatter_s256 = {
-    input = {"cuba::ps_points", 3},
+    input = "cuba::ps_points/3",
     mass = M_TOP,
     width = 3.
 }

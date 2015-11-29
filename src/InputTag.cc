@@ -1,4 +1,5 @@
 #include <InputTag.h>
+#include <Pool.h>
 
 std::vector<std::string> split(const std::string& s, const std::string& delimiters) {
 
@@ -20,4 +21,12 @@ std::vector<std::string> split(const std::string& s, const std::string& delimite
     while (next != std::string::npos);
 
     return result;
+}
+
+void InputTag::ensure_resolved() const {
+    if (resolved)
+        return;
+
+    content = Pool::get().raw_get(*this);
+    resolved = true;
 }

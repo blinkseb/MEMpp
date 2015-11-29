@@ -1,8 +1,9 @@
 #include <stdexcept>
+#include <logging.h>
 
 #include <lua/utils.h>
-#include <ArrayEntry.h>
 #include <InputTag.h>
+#include <ConfigurationSet.h>
 
 namespace lua {
 
@@ -23,8 +24,6 @@ namespace lua {
                 std::string value = lua_tostring(L, index);
                 if (InputTag::isInputTag(value))
                     return INPUT_TAG;
-                else if (ArrayEntry::isArrayEntry(L, index))
-                    return ARRAY_ENTRY;
                 else
                     return STRING;
             } break;
@@ -35,6 +34,14 @@ namespace lua {
                 else
                     return REAL;
                 break;
+
+            case LUA_TTABLE: {
+                // We only support ConfigurationSet for table
+                if (lua_is_array(L, index) == -1) {
+                    return CONFIGURATION_SET;
+                }
+
+            } break;
         }
 
         return NOT_SUPPORTED;
@@ -51,6 +58,8 @@ namespace lua {
      */
     int lua_is_array(lua_State* L, int index) {
 
+        LOG(trace) << "[lua_is_array] >> stack size = " << lua_gettop(L);
+
         size_t table_index = get_index(L, index);
 
         if (lua_type(L, table_index) != LUA_TTABLE)
@@ -60,14 +69,18 @@ namespace lua {
 
         lua_pushnil(L);
         while (lua_next(L, table_index) != 0) {
-            if (lua_type(L, -2) != LUA_TNUMBER)
+            if (lua_type(L, -2) != LUA_TNUMBER) {
+                lua_pop(L, 2);
+                LOG(trace) << "[lua_is_array] << stack size = " << lua_gettop(L);
                 return -1;
+            }
 
             size++;
 
             lua_pop(L, 1);
         }
 
+        LOG(trace) << "[lua_is_array] << stack size = " << lua_gettop(L);
         return size;
     }
 
@@ -111,6 +124,7 @@ namespace lua {
 
     boost::any to_any(lua_State* L, int index) {
     
+        LOG(trace) << "[to_any] >> stack size = " << lua_gettop(L);
         size_t absolute_index = get_index(L, index);
 
         boost::any result;
@@ -142,27 +156,30 @@ namespace lua {
             } break;
 
             case LUA_TTABLE: {
+                LOG(trace) << "[to_any::table] >> stack size = " << lua_gettop(L);
                 if (lua::lua_is_array(L, absolute_index) > 0) {
 
-                    ArrayEntry entry;
                     Type type = NOT_SUPPORTED;
 
-                    if (ArrayEntry::fromTable(L, absolute_index, entry)) {
-                        result = entry;
-                        break;
-                    } else if ((type = lua::lua_array_unique_type(L, absolute_index)) != NOT_SUPPORTED) {
+                    if ((type = lua::lua_array_unique_type(L, absolute_index)) != NOT_SUPPORTED) {
                         result = lua_to_vector(L, absolute_index, type);
                     } else {
                         // Convert to a vector of boost::any
-                        result = lua_to_vector(L, absolute_index);
+                        // result = lua_to_vector(L, absolute_index);
+                        throw invalid_array_error("Various types stored into the array. This is not supported.");
                     }
 
                 } else {
-                    throw invalid_array_error("Map are not supported for the moment");
+                    ConfigurationSet cfg("", "");
+                    cfg.parse(L, absolute_index);
+                    result = cfg;
                 }
+                LOG(trace) << "[to_any::table] << stack size = " << lua_gettop(L);
             } break;
         }
 
+        LOG(trace) << "[to_any] << final type = " << result.type().name();
+        LOG(trace) << "[to_any] << stack size = " << lua_gettop(L);
         return result;
     }
 
@@ -183,8 +200,8 @@ namespace lua {
             case INPUT_TAG:
                 return boost::any(lua_to_vectorT<InputTag>(L, index));
 
-            case ARRAY_ENTRY:
-                return boost::any(lua_to_vectorT<ArrayEntry>(L, index));
+            case CONFIGURATION_SET:
+                return boost::any(lua_to_vectorT<ConfigurationSet>(L, index));
         }
 
         throw invalid_array_error("Unsupported array type");

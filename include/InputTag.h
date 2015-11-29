@@ -1,5 +1,9 @@
 #pragma once
 
+#include <boost/any.hpp>
+
+#include <memory>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -12,16 +16,35 @@ struct InputTag {
             string_representation = module + "::" + parameter;
         }
 
+        InputTag(const std::string& module, const std::string& parameter, size_t index):
+            module(module), parameter(parameter), indexed(true), index(index) {
+            string_representation = module + "::" + parameter + "/" + std::to_string(index);
+        }
+
         InputTag() = default;
 
         /*!
          *  Check if a given string is an input tag. Expected format is
-         *      Module::Parameter
+         *      Module::Parameter[/Index]
          *
          *  Delimiter is '::'.
          */
         static bool isInputTag(const std::string& tag) {
-            return tag.find("::") != std::string::npos;
+            if (tag.find("::") == std::string::npos)
+                return false;
+
+            if (tag.find("/") != std::string::npos) {
+                auto tags = split(tag, "::");
+                auto rtags = split(tags[1], "/");
+                try {
+                    size_t index = std::stoull(rtags[1]);
+                    return true;
+                } catch (std::invalid_argument e) {
+                    return false;
+                }
+            } else {
+                return true;
+            }
         }
 
         /*!
@@ -30,8 +53,12 @@ struct InputTag {
          */
         static InputTag fromString(const std::string& tag) {
             auto tags = split(tag, "::");
+            auto rtags = split(tags[1], "/");
 
-            return InputTag(tags[0], tags[1]);
+            if (rtags.size() == 1)
+                return InputTag(tags[0], tags[1]);
+            else
+                return InputTag(tags[0], rtags[0], std::stoull(rtags[1]));
         }
 
         bool operator==(const InputTag& rhs) const {
@@ -42,10 +69,35 @@ struct InputTag {
             return string_representation;
         }
 
+        bool isIndexed() const {
+            return indexed;
+        }
+
+        template<typename T> const T& get() const {
+            ensure_resolved();
+
+            if (isIndexed()) {
+                auto ptr = boost::any_cast<std::shared_ptr<std::vector<T>>>(content);
+                return (*ptr)[index];
+            } else {
+                auto ptr = boost::any_cast<std::shared_ptr<T>>(content);
+                return (*ptr);
+            }
+        }
+
         std::string module;
         std::string parameter;
 
+    private:
+        void ensure_resolved() const;
+
+        bool indexed = false;
+        size_t index;
+
         std::string string_representation;
+
+        mutable bool resolved = false;
+        mutable boost::any content;
 };
 
 namespace std {
@@ -57,5 +109,5 @@ namespace std {
 
             std::hash<std::string> string_hash;
         };
-};
 
+};

@@ -1,8 +1,5 @@
-#include <ArrayEntry.h>
 #include <ConfigurationSet.h>
 #include <Module.h>
-
-#include <iostream>
 
 class Flatter: public Module {
     public:
@@ -10,7 +7,7 @@ class Flatter: public Module {
         Flatter(const ConfigurationSet& parameters): Module(parameters.getModuleName()),
             mass(parameters.get<double>("mass")),
             width(parameters.get<double>("width")),
-            m_ps_point(parameters.get<ArrayEntry>("input")) {
+            m_ps_point(parameters.get<InputTag>("input")) {
 
         };
 
@@ -31,7 +28,7 @@ class Flatter: public Module {
     private:
         const float mass;
         const float width;
-        ArrayEntry m_ps_point;
+        InputTag m_ps_point;
 
         std::shared_ptr<double> s = produce<double>("s");
         std::shared_ptr<double> jacobian = produce<double>("jacobian");

@@ -13,6 +13,10 @@ struct ArrayEntry;
 class Pool {
     public:
         template<typename T> std::shared_ptr<const T> get(const InputTag& tag) {
+            if (tag.isIndexed()) {
+                throw std::invalid_argument("Indexed input tag cannot be passed as argument of the pool. Use the `get` function of the input tag to retrieve its content.");
+            }
+
             auto it = m_pool.find(tag);
             if (it == m_pool.end())
                 throw tag_not_found_error("No such tag in pool: " + tag.toString());
@@ -48,7 +52,7 @@ class Pool {
             using std::runtime_error::runtime_error;
         };
 
-        friend struct ArrayEntry;
+        friend struct InputTag;
 
         boost::any raw_get(const InputTag&);
 

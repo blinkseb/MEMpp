@@ -25,6 +25,12 @@ class ConfigurationSet {
             return boost::any_cast<const T&>(value->second);
         }
 
+        bool exists(const std::string& name) const;
+        template<typename T> bool existsAs(const std::string& name) const {
+            auto value = m_set.find(name);
+            return (value != m_set.end() && value->second.type() == typeid(T));
+        }
+
         void parse(lua_State* L, int index);
 
         std::string getModuleName() const {
@@ -41,6 +47,9 @@ class ConfigurationSet {
         };
 
         friend class ConfigurationReader;
+        friend boost::any lua::to_any(lua_State* L, int index);
+
+
         ConfigurationSet(const std::string& module_type, const std::string& module_name):
             m_module_type(module_type),
             m_module_name(module_name) {}
