@@ -120,7 +120,7 @@ enum { uninitialized = 0x61627563 };
 #define POW2(n) ldexp(1., -n)
 #endif
 
-#define NOTZERO POW2(104)
+#define NOTZERO POW2(250)
 
 #define ABORT -999
 
