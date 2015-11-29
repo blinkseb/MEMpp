@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <vector>
+#include <algorithm>
 
 #define SQ(x) (x*x)
 #define CB(x) (x*x*x)
@@ -129,5 +130,56 @@ bool solve2Linear(const double a10, const double a01, const double a00,
 
 
 double BreitWigner(const double s, const double m, const double g);
+
+/*!
+ * Convert a LorentzVector to a vector of real number.
+ *
+ * @v   The LorentzVector to convert
+ *
+ * @returns a vector of real number containing 4 entries: [E, Px, Py, Pz]
+ */
+template<class T>
+std::vector<typename T::Scalar> toVector(const T& v) {
+    return {v.E(), v.Px(), v.Py(), v.Pz()};
+}
+
+/*!
+ * Compute the array of permutation needed to go from vector `from` to vector `to`
+ *
+ * @from The array before sorting
+ * @to The array after sorting
+ *
+ * @return An array of the same size than `from` containing the permutation to apply to go
+ * from `from` to `to`
+ */
+template <typename T>
+std::vector<std::size_t> get_permutations(const std::vector<T>& from, const std::vector<T>& to) {
+
+    std::vector<std::size_t> p(from.size());
+
+    std::transform(from.begin(), from.end(), p.begin(), [&from, &to](const T& item) -> std::size_t {
+                return std::distance(to.begin(), std::find(to.begin(), to.end(), item));
+            });
+
+    return p;
+}
+
+/*!
+ * Apply a set of permutations to a vector
+ *
+ * @vec The vector to sort
+ * @p The set of permutation to apply
+ *
+ * @return A new vector with all the permutations applied
+ */
+template <typename T>
+void apply_permutations(std::vector<T>& vec, std::vector<std::size_t> const& p) {
+    std::vector<T> sorted_vec(p.size());
+    std::transform(p.begin(), p.end(), sorted_vec.begin(), [&vec](int i) {
+                return vec[i];
+            });
+
+    vec = sorted_vec;
+}
 
 #endif

@@ -73,7 +73,7 @@ std::vector<std::pair<double, double>> MEMpp::computeWeights(const std::vector<L
     int neval, nfail;
     double mcResult = 0, prob = 0, error = 0;
 
-    char verbosity = 0; // 0-3
+    char verbosity = 3; // 0-3
     bool subregion = false; // true = only last set of samples is used for final evaluation of integral
     bool smoothing = false;
     bool retainStateFile = false; // false => delete state file when integration ends
@@ -94,8 +94,8 @@ std::vector<std::pair<double, double>> MEMpp::computeWeights(const std::vector<L
          flags,                  // (int) various control flags in binary format, see setFlags function
          0,                      // (int) seed (seed==0 => SOBOL; seed!=0 && control flag "level"==0 => Mersenne Twister)
          0,                      // (int) minimum number of integrand evaluations
-         10,                    // (int) maximum number of integrand evaluations (approx.!)
-         10,                     // (int) number of integrand evaluations per interations (to start)
+         500000,                    // (int) maximum number of integrand evaluations (approx.!)
+         25000,                     // (int) number of integrand evaluations per interations (to start)
          0,                      // (int) increase in number of integrand evaluations per interations
          12500,                   // (int) batch size for sampling
          0,                      // (int) grid number, 1-10 => up to 10 grids can be stored, and re-used for other integrands (provided they are not too different)
@@ -120,16 +120,15 @@ double MEMpp::integrand(const double* psPoints, const double* weights) {
         module->work();
     }
 
-    const std::vector<std::vector<LorentzVector>>& i = *Pool::get().get<std::vector<std::vector<LorentzVector>>>({"blockd", "invisibles"});
+    const std::vector<double>& me_weights = *Pool::get().get<std::vector<double>>({"ttbar", "weights"});
+    //const std::vector<std::vector<LorentzVector>>& i = *Pool::get().get<std::vector<std::vector<LorentzVector>>>({"blockd", "invisibles"});
 
-    for (const auto& p: i) {
-        for (const auto& pp: p)
-            std::cout << pp << " ; ";
-
-        std::cout << std::endl;
+    double sum = 0;
+    for (const auto& p: me_weights) {
+        sum += p;
     }
 
-    return 0;
+    return sum;
 }
 
 int MEMpp::CUBAIntegrand(const int *nDim, const double* psPoint, const int *nComp, double *value, void *inputs, const int *nVec, const int *core, const double *weight) {

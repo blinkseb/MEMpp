@@ -25,8 +25,10 @@ if (NOT LUA_FOUND)
 endif()
 
 set(MEMPP_SOURCES
-    "modules/Flatter.cc"
     "modules/BlockD.cc"
+    "modules/Boost.cc"
+    "modules/Flatter.cc"
+    "modules/MatrixElement.cc"
     "src/ConfigurationReader.cc"
     "src/ConfigurationSet.cc"
     "src/InputTag.cc"
@@ -45,9 +47,8 @@ add_library(mempp SHARED ${MEMPP_SOURCES})
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g -O2 -fcx-fortran-rules -fcx-limited-range")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-set(EXTERNAL_DIR "${PROJECT_SOURCE_DIR}/external")
-add_subdirectory(external)
-
+include_directories(ME/src)
+include_directories(ME/SubProcesses/P1_Sigma_sm_gg_mupvmbmumvmxbx)
 include_directories(${EXTERNAL_DIR})
 include_directories(${EXTERNAL_DIR}/cuba)
 include_directories(${EXTERNAL_DIR}/spdlog)
@@ -59,6 +60,7 @@ target_link_libraries(mempp dl)
 target_link_libraries(mempp cuba)
 target_link_libraries(mempp ${LUA_LIBRARIES})
 target_link_libraries(mempp pthread)
+target_link_libraries(mempp ME_cpp_pp_ttx_fullylept)
 target_link_libraries(mempp ${LHAPDF_LIBRARIES})
 target_link_libraries(mempp ${ROOT_LIBRARIES})
 

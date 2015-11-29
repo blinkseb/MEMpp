@@ -11,13 +11,13 @@ int main(int argc, char** argv) {
     MEMpp weight(configuration);
 
     // Electron
-    LorentzVector p3(1.617190e+01, -1.379191e+01, -3.429975e+00, 2.152932e+01);
+    LorentzVector p3(16.171895980835, -13.7919054031372, -3.42997527122497, 21.5293197631836);
     // b-quark
-    LorentzVector p4(-5.579083e+01, -1.115929e+02, -1.221447e+02, 1.746626e+02);
+    LorentzVector p4(-55.7908325195313, -111.59294128418, -122.144721984863, 174.66259765625);
     // Muon
-    LorentzVector p5(-1.890186e+01, 1.008961e+01, -6.029266e-01, 2.143464e+01);
+    LorentzVector p5(-18.9018573760986, 10.0896110534668, -0.602926552295686, 21.4346446990967);
     // Anti b-quark
-    LorentzVector p6(7.327256e+01, 9.854132e+01, -7.928848e+01, 1.462464e+02);
+    LorentzVector p6(71.3899612426758, 96.0094833374023, -77.2513122558594, 142.492813110352);
 
     std::vector<std::pair<double, double>> weights = weight.computeWeights({p3, p4, p5, p6});
 
