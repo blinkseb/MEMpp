@@ -2,6 +2,9 @@
 #include <MEMpp.h>
 #include <Types.h>
 #include <logging.h>
+#include <chrono>
+
+using namespace std::chrono;
 
 int main(int argc, char** argv) {
 
@@ -19,12 +22,17 @@ int main(int argc, char** argv) {
     // Anti b-quark
     LorentzVector p6(71.3899612426758, 96.0094833374023, -77.2513122558594, 142.492813110352);
 
+    auto start_time = system_clock::now();
     std::vector<std::pair<double, double>> weights = weight.computeWeights({p3, p4, p5, p6});
+    auto end_time = system_clock::now();
 
     LOG(debug) << "Result:";
     for (const auto& r: weights) {
         LOG(debug) << r.first << " +- " << r.second;
     }
+
+    LOG(info) << "Weight computed in " << std::chrono::duration_cast<milliseconds>(end_time - start_time).count() << "ms";
+
 
     return 0;
 }
