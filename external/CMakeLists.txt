@@ -1,2 +1,5 @@
 add_subdirectory(cuba)
-add_subdirectory(lua)
+
+if (NOT LUA_FOUND)
+    add_subdirectory(lua)
+endif()

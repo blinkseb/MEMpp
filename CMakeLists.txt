@@ -9,6 +9,20 @@ endif(${CMAKE_MAJOR_VERSION} EQUAL 2 AND ${CMAKE_MINOR_VERSION} EQUAL 6)
 
 include_directories("${CMAKE_CURRENT_LIST_DIR}/include")
 
+# Find dependencies
+find_package(ROOT REQUIRED)
+find_package(LHAPDF REQUIRED)
+find_package(Lua)
+
+# Include external
+set(EXTERNAL_DIR "${PROJECT_SOURCE_DIR}/external")
+add_subdirectory(external)
+add_subdirectory(ME)
+
+if (NOT LUA_FOUND)
+    set(LUA_LIBRARIES lua)
+    set(LUA_INCLUDE_DIR "external/lua")
+endif()
 
 set(MEMPP_SOURCES
     "modules/Flatter.cc"
@@ -27,10 +41,8 @@ set(MEMPP_SOURCES
     )
 
 add_library(mempp SHARED ${MEMPP_SOURCES})
-target_link_libraries(mempp dl)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g -O2 -fcx-fortran-rules -fcx-limited-range")
-
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(EXTERNAL_DIR "${PROJECT_SOURCE_DIR}/external")
@@ -38,15 +50,16 @@ add_subdirectory(external)
 
 include_directories(${EXTERNAL_DIR})
 include_directories(${EXTERNAL_DIR}/cuba)
-include_directories(${EXTERNAL_DIR}/lua)
 include_directories(${EXTERNAL_DIR}/spdlog)
-
-target_link_libraries(mempp cuba)
-target_link_libraries(mempp lua)
-target_link_libraries(mempp pthread)
-
-find_package(ROOT REQUIRED)
+include_directories(${LUA_INCLUDE_DIR})
+include_directories(${LHAPDF_INCLUDE_DIRECTORIES})
 include_directories(${ROOT_INCLUDE_DIR})
+
+target_link_libraries(mempp dl)
+target_link_libraries(mempp cuba)
+target_link_libraries(mempp ${LUA_LIBRARIES})
+target_link_libraries(mempp pthread)
+target_link_libraries(mempp ${LHAPDF_LIBRARIES})
 target_link_libraries(mempp ${ROOT_LIBRARIES})
 
 add_library(empty_module SHARED "modules/EmptyModule.cc")
