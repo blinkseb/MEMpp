@@ -28,6 +28,7 @@ set(MEMPP_SOURCES
     "modules/BlockD.cc"
     "modules/Boost.cc"
     "modules/Flatter.cc"
+    "modules/GaussianTransferFunction.cc"
     "modules/MatrixElement.cc"
     "src/ConfigurationReader.cc"
     "src/ConfigurationSet.cc"
@@ -63,6 +64,9 @@ target_link_libraries(mempp pthread)
 target_link_libraries(mempp ME_cpp_pp_ttx_fullylept)
 target_link_libraries(mempp ${LHAPDF_LIBRARIES})
 target_link_libraries(mempp ${ROOT_LIBRARIES})
+
+find_library(ROOT_GENVECTOR_LIBRARY GenVector HINTS ${ROOT_LIBRARY_DIR})
+target_link_libraries(mempp ${ROOT_GENVECTOR_LIBRARY})
 
 add_library(empty_module SHARED "modules/EmptyModule.cc")
 

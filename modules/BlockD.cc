@@ -7,11 +7,12 @@ class BlockD: public Module {
     public:
 
         BlockD(const ConfigurationSet& parameters): Module(parameters.getModuleName()) {
-            particles = get<std::vector<LorentzVector>>(parameters.get<InputTag>("input"));
             s13 = get<double>(parameters.get<InputTag>("s13"));
             s134 = get<double>(parameters.get<InputTag>("s134"));
             s25 = get<double>(parameters.get<InputTag>("s25"));
             s256 = get<double>(parameters.get<InputTag>("s256"));
+
+            m_particle_tags = parameters.get<std::vector<InputTag>>("inputs");
         };
 
         virtual void work() override {
@@ -19,10 +20,10 @@ class BlockD: public Module {
             invisibles->clear();
             jacobians->clear();
 
-            const LorentzVector& p3 = (*particles)[0];
-            const LorentzVector& p4 = (*particles)[1];
-            const LorentzVector& p5 = (*particles)[2];
-            const LorentzVector& p6 = (*particles)[3];
+            const LorentzVector& p3 = m_particle_tags[0].get<LorentzVector>();
+            const LorentzVector& p4 = m_particle_tags[1].get<LorentzVector>();
+            const LorentzVector& p5 = m_particle_tags[2].get<LorentzVector>();
+            const LorentzVector& p6 = m_particle_tags[3].get<LorentzVector>();
 
             // FIXME
             const LorentzVector ISR; // = (*particles)[0];
@@ -231,7 +232,8 @@ class BlockD: public Module {
         }
 
     private:
-        std::shared_ptr<const std::vector<LorentzVector>> particles;
+        std::vector<InputTag> m_particle_tags;
+
         std::shared_ptr<const double> s13;
         std::shared_ptr<const double> s134;
         std::shared_ptr<const double> s25;

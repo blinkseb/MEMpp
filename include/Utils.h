@@ -5,6 +5,8 @@
 #include <vector>
 #include <algorithm>
 
+#include <Types.h>
+
 #define SQ(x) (x*x)
 #define CB(x) (x*x*x)
 #define QU(x) (x*x*x*x)
@@ -21,12 +23,12 @@ template<typename T> T sign(const T x){
 }
 
 // Used to compute Jacobian for Transfer Function
-inline double dEoverdP(const double E, const double m){
-    const double rad = SQ(E) - SQ(m);
-    if(rad <= 0)
+inline double dE_over_dP(const LorentzVector& v){
+    const double rad = SQ(v.E()) - SQ(v.M());
+    if (rad <= 0)
         return 0.;
     else
-        return E/sqrt(rad);
+        return v.E() / std::sqrt(rad);
 }
 
 // If the NWA is used for a particle, a multiplication factor has to be introduced

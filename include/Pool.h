@@ -38,6 +38,8 @@ class Pool {
             return ptr;
         }
 
+        void alias(const InputTag& from, const InputTag& to);
+
         static Pool& get();
 
         static void create();
