@@ -7,8 +7,6 @@
 
 #include <InputTag.h>
 
-struct ArrayEntry;
-
 // A simple memory pool
 class Pool {
     public:
@@ -40,12 +38,9 @@ class Pool {
 
         void alias(const InputTag& from, const InputTag& to);
 
-        static Pool& get();
-
-        static void create();
-        static void destroy();
-
     private:
+        friend class MEMpp;
+
         class tag_not_found_error: public std::runtime_error {
             using std::runtime_error::runtime_error;
         };
@@ -62,8 +57,7 @@ class Pool {
         Pool(const Pool&) = delete;
         Pool& operator=(const Pool&) = delete;
 
-        static Pool*& instance();
-
         std::unordered_map<InputTag, boost::any> m_pool;
 };
 
+using PoolPtr = std::shared_ptr<Pool>;

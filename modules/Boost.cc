@@ -6,7 +6,7 @@
 class Boost: public Module {
     public:
 
-        Boost(const ConfigurationSet& parameters): Module(parameters.getModuleName()) {
+        Boost(PoolPtr pool, const ConfigurationSet& parameters): Module(pool, parameters.getModuleName()) {
             
             std::vector<InputTag> invisibles_tag = parameters.get<std::vector<InputTag>>("invisibles");
             for (const auto& tag: invisibles_tag) {
@@ -14,6 +14,8 @@ class Boost: public Module {
             }
 
             input_particles = parameters.get<std::vector<InputTag>>("particles");
+            for (auto& t: input_particles)
+                t.resolve(pool);
         };
 
         virtual void work() override {

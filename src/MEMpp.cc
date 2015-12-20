@@ -29,18 +29,18 @@ unsigned int setFlags(char verbosity, bool subregion, bool retainStateFile, unsi
 MEMpp::MEMpp(const ConfigurationReader& configuration) {
     
     // Initialize shared memory pool for modules
-    Pool::create();
+    m_pool.reset(new Pool());
 
     // Create phase-space points vector, input for many modules
-    m_ps_points = Pool::get().put<std::vector<double>>({"cuba", "ps_points"});
+    m_ps_points = m_pool->put<std::vector<double>>({"cuba", "ps_points"});
 
     // Create vector for input particles
-    m_particles = Pool::get().put<std::vector<LorentzVector>>({"input", "particles"});
+    m_particles = m_pool->put<std::vector<LorentzVector>>({"input", "particles"});
 
     // Construct modules from configuration
     std::vector<LightModule> modules = configuration.getModules();
     for (const auto& module: modules) {
-        m_modules.push_back(ModuleFactory::get().create(module.type, *module.parameters));
+        m_modules.push_back(ModuleFactory::get().create(module.type, m_pool, *module.parameters));
         m_modules.back()->configure();
     }
     
@@ -61,9 +61,6 @@ MEMpp::~MEMpp() {
     for (const auto& module :m_modules) {
         module->finish();
     }
-
-    // Destroy memory pool. Must be done before unloading libraries
-    Pool::destroy();
 }
 
 std::vector<std::pair<double, double>> MEMpp::computeWeights(const std::vector<LorentzVector>& particules) {
@@ -120,7 +117,7 @@ double MEMpp::integrand(const double* psPoints, const double* weights) {
         module->work();
     }
 
-    const std::vector<double>& me_weights = *Pool::get().get<std::vector<double>>({"ttbar", "weights"});
+    const std::vector<double>& me_weights = *m_pool->get<std::vector<double>>({"ttbar", "weights"});
     //const std::vector<std::vector<LorentzVector>>& i = *Pool::get().get<std::vector<std::vector<LorentzVector>>>({"blockd", "invisibles"});
 
     double sum = 0;

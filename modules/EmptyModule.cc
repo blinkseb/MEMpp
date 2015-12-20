@@ -4,7 +4,7 @@
 class EmptyModule: public Module {
     public:
 
-        EmptyModule(const ConfigurationSet& parameters): Module(parameters.getModuleName()) {
+        EmptyModule(PoolPtr pool, const ConfigurationSet& parameters): Module(pool, parameters.getModuleName()) {
             // Empty
         };
 

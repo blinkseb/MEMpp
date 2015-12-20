@@ -6,6 +6,7 @@
 #include <Module.h>
 #include <SharedLibrary.h>
 #include <Types.h>
+#include <Pool.h>
 
 class MEMpp {
     public:
@@ -20,6 +21,7 @@ class MEMpp {
     private:
         static int CUBAIntegrand(const int *nDim, const double* psPoint, const int *nComp, double *value, void *inputs, const int *nVec, const int *core, const double *weight);
 
+        PoolPtr m_pool;
         std::vector<ModulePtr> m_modules;
 
         using SharedLibraryPtr = std::shared_ptr<SharedLibrary>;

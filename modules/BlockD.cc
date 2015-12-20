@@ -6,13 +6,15 @@
 class BlockD: public Module {
     public:
 
-        BlockD(const ConfigurationSet& parameters): Module(parameters.getModuleName()) {
+        BlockD(PoolPtr pool, const ConfigurationSet& parameters): Module(pool, parameters.getModuleName()) {
             s13 = get<double>(parameters.get<InputTag>("s13"));
             s134 = get<double>(parameters.get<InputTag>("s134"));
             s25 = get<double>(parameters.get<InputTag>("s25"));
             s256 = get<double>(parameters.get<InputTag>("s256"));
 
             m_particle_tags = parameters.get<std::vector<InputTag>>("inputs");
+            for (auto& t: m_particle_tags)
+                t.resolve(pool);
         };
 
         virtual void work() override {

@@ -9,6 +9,8 @@
 
 std::vector<std::string> split(const std::string& s, const std::string& delimiters);
 
+class Pool;
+
 struct InputTag {
     public:
         InputTag(const std::string& module, const std::string& parameter):
@@ -73,8 +75,12 @@ struct InputTag {
             return indexed;
         }
 
+        void resolve(std::shared_ptr<Pool>) const;
+
         template<typename T> const T& get() const {
-            ensure_resolved();
+            if (! resolved) {
+                throw tag_not_resolved_error("You must call 'resolve' once before calling 'get'"); 
+            }
 
             if (isIndexed()) {
                 auto ptr = boost::any_cast<std::shared_ptr<std::vector<T>>>(content);
@@ -89,7 +95,9 @@ struct InputTag {
         std::string parameter;
 
     private:
-        void ensure_resolved() const;
+        class tag_not_resolved_error: public std::runtime_error {
+            using std::runtime_error::runtime_error;
+        };
 
         bool indexed = false;
         size_t index;

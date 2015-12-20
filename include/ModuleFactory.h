@@ -10,6 +10,7 @@
 // Forward declaration
 class Module;
 class ConfigurationSet;
+class Pool;
 
 // Plugin system
 template<typename T> class PluginFactory;
@@ -85,7 +86,7 @@ class PluginFactory<Interface* (Args...)> {
         std::unordered_map<std::string, PMakerBase*> m_plugins;
 };
 
-using ModuleFactory = PluginFactory<Module* (const ConfigurationSet&)>;
+using ModuleFactory = PluginFactory<Module* (std::shared_ptr<Pool>, const ConfigurationSet&)>;
 
 #define MODULE_UNIQUE_NAME2(x, y) x ## y
 #define MODULE_UNIQUE_NAME(x, y) MODULE_UNIQUE_NAME2(x, y)

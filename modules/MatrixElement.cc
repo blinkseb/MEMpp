@@ -15,7 +15,7 @@ class MatrixElement: public Module {
 
     public:
 
-        MatrixElement(const ConfigurationSet& parameters): Module(parameters.getModuleName()) {
+        MatrixElement(PoolPtr pool, const ConfigurationSet& parameters): Module(pool, parameters.getModuleName()) {
             m_partons = get<std::vector<std::vector<LorentzVector>>>(parameters.get<InputTag>("initialState"));
 
             const auto& invisibles_set = parameters.get<ConfigurationSet>("invisibles");
@@ -40,6 +40,8 @@ class MatrixElement: public Module {
             const auto& particles_set = parameters.get<ConfigurationSet>("particles");
 
             m_particles_tags = particles_set.get<std::vector<InputTag>>("inputs");
+            for (auto& tag: m_particles_tags)
+                tag.resolve(pool);
             LOG(debug) << "[MatrixElement] # particles input tags: " << m_particles_tags.size();
 
             const auto& particles_ids_set = particles_set.get<std::vector<ConfigurationSet>>("ids");

@@ -23,10 +23,10 @@ std::vector<std::string> split(const std::string& s, const std::string& delimite
     return result;
 }
 
-void InputTag::ensure_resolved() const {
+void InputTag::resolve(PoolPtr pool) const {
     if (resolved)
         return;
 
-    content = Pool::get().raw_get(*this);
+    content = pool->raw_get(*this);
     resolved = true;
 }
