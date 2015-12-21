@@ -16,6 +16,10 @@ class MatrixElement: public Module {
     public:
 
         MatrixElement(PoolPtr pool, const ConfigurationSet& parameters): Module(pool, parameters.getModuleName()) {
+
+            sqrt_s = parameters.globalConfiguration().get<double>("energy");
+            M_T = parameters.globalConfiguration().get<double>("top_mass");
+
             m_partons = get<std::vector<std::vector<LorentzVector>>>(parameters.get<InputTag>("initialState"));
 
             const auto& invisibles_set = parameters.get<ConfigurationSet>("invisibles");
@@ -125,13 +129,11 @@ class MatrixElement: public Module {
 
             auto result = m_ME->sigmaKin(initialState, finalStates);
 
-            // FIXME
-            static const double SQRT_S = 13000.;
-            double x1 = std::abs(partons[0].Pz() / (SQRT_S / 2.));
-            double x2 = std::abs(partons[1].Pz() / (SQRT_S / 2.));
+            double x1 = std::abs(partons[0].Pz() / (sqrt_s / 2.));
+            double x2 = std::abs(partons[1].Pz() / (sqrt_s / 2.));
 
             // Compute flux factor 1/(2*x1*x2*s)
-            double phaseSpaceIn = 1. / (2. * x1 * x2 * SQ(SQRT_S));
+            double phaseSpaceIn = 1. / (2. * x1 * x2 * SQ(sqrt_s));
 
             // Compute phase space density for observed particles (not concerned by the change of variable)
             // dPhi = |P|^2 sin(theta)/(2*E*(2pi)^3)
@@ -148,8 +150,6 @@ class MatrixElement: public Module {
             // PDF
             double final_weight = 0;
             for (const auto& me: result) {
-                //FIXME
-                static double M_T = 173;
                 double pdf1 = m_pdf->xfxQ2(me.first.first, x1, SQ(M_T)) / x1;
                 double pdf2 = m_pdf->xfxQ2(me.first.second, x2, SQ(M_T)) / x2;
 
@@ -161,6 +161,9 @@ class MatrixElement: public Module {
         }
 
     private:
+        double sqrt_s;
+        double M_T;
+
         std::shared_ptr<const std::vector<std::vector<LorentzVector>>> m_partons;
 
         std::shared_ptr<const std::vector<std::vector<LorentzVector>>> m_invisibles;

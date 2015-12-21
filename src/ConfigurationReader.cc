@@ -130,13 +130,22 @@ ConfigurationReader::ConfigurationReader(const std::string& file) {
         printf("%s\n", lua_tostring(lua_state, -1));
     }
 
+    // Read global configuration from global variable named 'configuration'
+    m_global_configuration.reset(new ConfigurationSet("configuration", "configuration"));
+    int type = lua_getglobal(lua_state, "configuration");
+    if (type == LUA_TTABLE) {
+        LOG(debug) << "Parsing global configuration.";
+        m_global_configuration->parse(lua_state, -1);
+    }
+    lua_pop(lua_state, 1);
+
     for (auto& m: m_light_modules) {
         LOG(debug) << "Configuration declared module " << m.type << "::" << m.name;
 
         lua_getglobal(lua_state, m.type.c_str());
         lua_getfield(lua_state, -1, m.name.c_str());
 
-        m.parameters.reset(new ConfigurationSet(m.type, m.name));
+        m.parameters.reset(new ConfigurationSet(m.type, m.name, m_global_configuration));
         m.parameters->parse(lua_state, -1);
 
         lua_pop(lua_state, 2);

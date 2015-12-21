@@ -33,6 +33,11 @@ else
     }
 end
 
+configuration = {
+    energy = 13000.,
+    top_mass = M_TOP,
+    W_mass = M_W
+}
 
 Flatter.flatter_s13 = {
     input = "cuba::ps_points/0",

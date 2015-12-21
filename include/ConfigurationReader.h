@@ -22,4 +22,5 @@ class ConfigurationReader {
 
     private:
         std::vector<LightModule> m_light_modules;
+        std::shared_ptr<ConfigurationSet> m_global_configuration;
 };

@@ -7,6 +7,8 @@ class BlockD: public Module {
     public:
 
         BlockD(PoolPtr pool, const ConfigurationSet& parameters): Module(pool, parameters.getModuleName()) {
+            sqrt_s = parameters.globalConfiguration().get<double>("energy");
+
             s13 = get<double>(parameters.get<InputTag>("s13"));
             s134 = get<double>(parameters.get<InputTag>("s134"));
             s25 = get<double>(parameters.get<InputTag>("s25"));
@@ -149,9 +151,6 @@ class BlockD: public Module {
 
         double computeJacobian(const LorentzVector& p1, const LorentzVector& p2, const LorentzVector& p3, const LorentzVector& p4, const LorentzVector& p5, const LorentzVector& p6) {
 
-            // FIXME
-            const double sqrt_s = 13000;
-
             const double E1  = p1.E();
             const double p1x = p1.Px();
             const double p1y = p1.Py();
@@ -234,6 +233,8 @@ class BlockD: public Module {
         }
 
     private:
+        double sqrt_s;
+
         std::vector<InputTag> m_particle_tags;
 
         std::shared_ptr<const double> s13;
